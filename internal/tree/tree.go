@@ -18,6 +18,7 @@ type treeItem struct {
 }
 
 type tree struct {
+	expectedRoot     string
 	verbose          verbose.Verbose
 	depth            int
 	showDroppedChild bool
@@ -30,8 +31,11 @@ type tree struct {
 }
 
 // NewTree creates a new instance for tree visualization
-func NewTree(verbose verbose.Verbose, depth int,
-	showDroppedChild, visualizeTrimmed, showAll, colored bool, modInfo moduleinfo.Info) *tree {
+func NewTree(
+	expectedRoot string,
+	verbose verbose.Verbose, depth int,
+	showDroppedChild, visualizeTrimmed, showAll, colored bool, modInfo moduleinfo.Info,
+) *tree {
 	if depth > maxDepth {
 		depth = maxDepth
 	}
@@ -39,6 +43,7 @@ func NewTree(verbose verbose.Verbose, depth int,
 		depth = 1
 	}
 	t := tree{
+		expectedRoot:     expectedRoot,
 		verbose:          verbose,
 		depth:            depth,
 		showDroppedChild: showDroppedChild,
@@ -94,7 +99,7 @@ func (t *tree) addItem(name string, childName string) *treeItem {
 		t.items[name] = item
 	}
 
-	if t.rootItem == nil {
+	if t.rootItem == nil && strings.Contains(name, t.expectedRoot) {
 		t.rootItem = item
 	}
 

@@ -23,16 +23,21 @@ import (
 func Execute() {
 	// TODO:
 	// - check go version
-	showAll := flag.Bool("a", false, "show all dependencies, also without upgrade and point out duplicated children")
+	showAll := flag.Bool("a", true, "show all dependencies, also without upgrade and point out duplicated children")
 	colored := flag.Bool("c", false, "upgrade candidates will be marked yellow")
-	depth := flag.Int("d", 3, "max depth of dependencies")
-	showDroppedChild := flag.Bool("f", false, "force show of each occurrence of a child branch in tree (can cause hang)")
-	visualizeTrimmed := flag.Bool("t", false, "visualize trimmed tree by '└─...'")
+	depth := flag.Int("d", 5, "max depth of dependencies")
+	showDroppedChild := flag.Bool("f", true, "force show of each occurrence of a child branch in tree (can cause hang)")
+	visualizeTrimmed := flag.Bool("t", true, "visualize trimmed tree by '└─...'")
 	printJSON := flag.Bool("json", false, "print JSON instead of tree")
-	graphFile := flag.String("graph", "", "path to file created e.g. by 'go mod graph > grapphfile.txt'")
-	upgradeFile := flag.String("upgrade", "", "path to file created e.g. by 'go list -u -m -json all > upgradefile.txt'")
+	graphFile := flag.String("graph", "grapphfile.txt", "path to file created e.g. by 'go mod graph > grapphfile.txt'")
+	upgradeFile := flag.String("upgrade", "upgradefile.txt", "path to file created e.g. by 'go list -u -m -json all > upgradefile.txt'")
 	verboseLevel := flag.Int("v", 0, "be more verbose")
 	flag.Parse()
+
+	root := ""
+	if flag.NArg() > 0 {
+		root = flag.Arg(0)
+	}
 
 	v := verbose.NewVerbose(*verboseLevel)
 
@@ -40,7 +45,7 @@ func Execute() {
 	info.Fill(getUpgradeContent(*upgradeFile, v))
 	v.Log1f("fill with upgrade content done")
 
-	tree := tree.NewTree(v, *depth, *showDroppedChild, *visualizeTrimmed, *showAll, *colored, *info)
+	tree := tree.NewTree(root, v, *depth, *showDroppedChild, *visualizeTrimmed, *showAll, *colored, *info)
 	file := getGraphFile(*graphFile, v)
 	defer file.Close()
 	tree.Fill(file)
